@@ -1,0 +1,29 @@
+---
+# ServerTime
+- name: Set localtimezone jp
+  command: cp -p /usr/share/zoneinfo/Japan /etc/localtime
+
+- name: Install ntpd
+  yum: name=ntp state=present
+
+- name: ntpd should be stopped
+  service:
+    name: ntpd
+    state: stopped
+
+- name: Adjust system clock
+  command: ntpdate ntp.nict.jp
+
+- name: Start ntpd
+  service:
+    name: ntpd
+    state: started
+    enabled: yes
+
+# PHP timezone
+- name: Set Asia/Tokyo to date.timezone on php.ini
+  lineinfile:
+    dest: /etc/php.ini
+    backrefs: yes
+    regexp: '^;date.timezone ='
+    line: 'date.timezone = Asia/Tokyo'

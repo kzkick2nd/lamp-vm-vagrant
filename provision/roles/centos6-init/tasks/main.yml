@@ -1,0 +1,69 @@
+---
+# - name: Upgrade all packages.
+#   yum: name=* state=latest
+
+# SELinux
+
+- name: Install package for SELinux management
+  yum: name={{ item }} state=present
+  with_items:
+    - libselinux-python
+
+- name: Set SELinux turned off
+  selinux: state=disabled
+
+# EPEL
+
+- name: Create EPEL repository definition
+  template: src=epel.repo dest=/etc/yum.repos.d/epel.repo
+
+- name: Create the GPG key for EPEL
+  template: src=RPM-GPG-KEY-EPEL-6 dest=/etc/pki/rpm-gpg
+
+# Utilities
+
+- name: Install utilities for ansible manage.
+  yum: name={{ item }} state=present
+  with_items:
+    - ansible
+    - libselinux-python
+    - libsemanage-python
+    - MySQL-python
+
+- name: Install developer tools
+  yum: name={{ item }} state=present
+  with_items:
+    - "@development"
+    - vim
+    - tree
+    - zsh
+    - git
+    - zip
+    - unzip
+
+# iptables
+
+# - name: Set up iptables rules
+#   template: src=iptables-save.j2 dest=/etc/sysconfig/iptables backup=yes
+
+# - name: Start iptables
+#   service: name=iptables enabled=yes
+#   notify: restart iptables
+
+- name: Stop iptables
+  service: name=iptables state=stopped enabled=no
+
+# ipv6
+
+- name: Disable ipv6
+  command: echo "net.ipv6.conf.all.disable_ipv6 = 1" >> /etc/sysctl.conf
+
+- name: Disable ipv6
+  command: echo "net.ipv6.conf.default.disable_ipv6 = 1" >> /etc/sysctl.conf
+
+- name: reload sysctl
+  command: sysctl -p
+  ignore_errors: yes
+
+- name: Disable postfix ipv6
+  command: sed -i 's/^inet_protocols\s\+=\s\+all$/inet_protocols = ipv4/' /etc/postfix/main.cf

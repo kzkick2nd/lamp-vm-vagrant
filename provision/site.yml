@@ -1,0 +1,8 @@
+---
+- name: Apply configuration to all nodes.
+  hosts: all
+  sudo: yes
+  roles:
+    - centos6-init
+    - centos6-lamp
+    - centos6-timezone-ja
